@@ -1,0 +1,32 @@
+name: Deploy to Caprover
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  caprover-deploy:
+    runs-on: ubuntu-latest
+    container: node:14
+    steps:
+      # BUILD THE IMAGE
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Push docker image to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: dankore/deploy-to-caprover-using-github-actions/deploy-to-caprover-using-github-actions
+          tag_with_ref: true
+      # DEPLOY TO CAPROVER. SECRETS STORED IN https://github.com/YOUR-USERNAME/deploy-to-caprover-using-github-actions/settings/secrets/actions
+      - name: Deploy to Caprover
+        uses: dankore/github-to-caprover@v.1.0.6
+        with:
+          server: "${{ secrets.CAPROVER_URL }}"
+          password: "${{ secrets.CAPROVER_PASSWORD }}"
+          appname: "${{ secrets.CAPROVER_APP }}"
+          image: docker.pkg.github.com/dankore/deploy-to-caprover-using-github-actions
+         
